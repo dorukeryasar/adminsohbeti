@@ -55,23 +55,23 @@ main{display:grid;grid-template-columns:240px 1fr;min-height:0}
 
 <div id="nameScreen">
   <div class="nameBox">
-    <div class="logo">💬</div>
+    <div class="logo">ðŸ’¬</div>
     <h1>Admin Sohbeti</h1>
-    <p>Sohbete katılmak için kullanıcı adını yaz.</p>
-    <input id="nameInput" maxlength="24" placeholder="Kullanıcı adın..." autocomplete="off">
-    <button onclick="joinChat()">Sohbete Katıl</button>
+    <p>Sohbete katÄ±lmak iÃ§in kullanÄ±cÄ± adÄ±nÄ± yaz.</p>
+    <input id="nameInput" maxlength="24" placeholder="KullanÄ±cÄ± adÄ±n..." autocomplete="off">
+    <button onclick="joinChat()">Sohbete KatÄ±l</button>
   </div>
 </div>
 
 <div id="app">
 <header>
-  <div class="headerIcon">💬</div>
+  <div class="headerIcon">ðŸ’¬</div>
   <div class="headerText">
     <h2>Admin Sohbeti</h2>
     <small>Genel Grup</small>
   </div>
-  <div class="online">◄1�7 Çevrimiçi</div>
-  <button id="adminToggle" onclick="toggleAdmin()">⚄1�7</button>
+  <div class="online">â—„1¤7 Ã‡evrimiÃ§i</div>
+  <button id="adminToggle" onclick="toggleAdmin()">âš„1¤7</button>
 </header>
 
 <main>
@@ -81,19 +81,19 @@ main{display:grid;grid-template-columns:240px 1fr;min-height:0}
   </aside>
   <section class="chat">
     <div id="messages" class="messages">
-      <div class="empty" id="empty">Henüz mesaj yok. İlk mesajı sen gönder! 👋</div>
+      <div class="empty" id="empty">HenÃ¼z mesaj yok. Ä°lk mesajÄ± sen gÃ¶nder! ðŸ‘‹</div>
     </div>
     <div class="composer">
       <input id="messageInput" maxlength="500" placeholder="Mesaj yaz..." autocomplete="off">
-      <button onclick="sendMessage()">Gönder</button>
+      <button onclick="sendMessage()">GÃ¶nder</button>
     </div>
   </section>
 </main>
 </div>
 
 <div class="adminPanel" id="adminPanel">
-  <button onclick="adminMessage()">📢 Admin mesajı gönder</button>
-  <button onclick="clearChat()">🗑︄1�7 Sohbeti temizle</button>
+  <button onclick="adminMessage()">ðŸ“¢ Admin mesajÄ± gÃ¶nder</button>
+  <button onclick="clearChat()">ðŸ—‘ï¸„1¤7 Sohbeti temizle</button>
 </div>
 
 <script>
@@ -117,11 +117,11 @@ function uniqueName(base){
 
 function joinChat(){
   let base=document.getElementById("nameInput").value.trim();
-  if(!base){alert("Lütfen bir kullanıcı adı yaz.");return}
+  if(!base){alert("LÃ¼tfen bir kullanÄ±cÄ± adÄ± yaz.");return}
   username=uniqueName(base);
   let users=getUsers();
   if(!users.includes(username)){users.push(username);saveUsers(users)}
-  // İlk giren kullanıcıya demo olarak admin yetkisi verilir.
+  // Ä°lk giren kullanÄ±cÄ±ya demo olarak admin yetkisi verilir.
   isAdmin=users[0]===username;
   document.getElementById("nameScreen").style.display="none";
   document.getElementById("app").style.display="grid";
@@ -141,8 +141,8 @@ function sendMessage(){
 }
 
 function adminMessage(){
-  if(!isAdmin){alert("Bu menü yalnızca admin içindir.");return}
-  const text=prompt("Admin mesajını yaz:");
+  if(!isAdmin){alert("Bu menÃ¼ yalnÄ±zca admin iÃ§indir.");return}
+  const text=prompt("Admin mesajÄ±nÄ± yaz:");
   if(!text||!text.trim())return;
   let arr=getMessages();
   arr.push({id:Date.now()+Math.random(),name:username,text:text.trim(),time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}),admin:true});
@@ -151,8 +151,8 @@ function adminMessage(){
 }
 
 function clearChat(){
-  if(!isAdmin){alert("Bu işlem yalnızca admin içindir.");return}
-  if(confirm("Tüm mesajlar silinsin mi?")){saveMessages([]);render()}
+  if(!isAdmin){alert("Bu iÅŸlem yalnÄ±zca admin iÃ§indir.");return}
+  if(confirm("TÃ¼m mesajlar silinsin mi?")){saveMessages([]);render()}
 }
 
 function toggleAdmin(){
@@ -165,14 +165,14 @@ function render(){
   const arr=getMessages();
   box.innerHTML="";
   if(!arr.length){
-    box.innerHTML='<div class="empty">Henüz mesaj yok. İlk mesajı sen gönder! 👋</div>';
+    box.innerHTML='<div class="empty">HenÃ¼z mesaj yok. Ä°lk mesajÄ± sen gÃ¶nder! ðŸ‘‹</div>';
   } else {
     arr.forEach(m=>{
       const wrap=document.createElement("div");
       wrap.className="msg "+(m.name===username?"mine ":"")+(m.admin?"adminMsg":"");
       const meta=document.createElement("div");
       meta.className="meta";
-      meta.innerHTML="<b>"+escapeHtml(m.name)+"</b> "+(m.admin?"🛡︄1�7 Admin ":"")+" · "+escapeHtml(m.time);
+      meta.innerHTML="<b>"+escapeHtml(m.name)+"</b> "+(m.admin?"ðŸ›¡ï¸„1¤7 Admin ":"")+" Â· "+escapeHtml(m.time);
       const bubble=document.createElement("div");
       bubble.className="bubble";
       bubble.textContent=m.text;
@@ -205,7 +205,7 @@ document.getElementById("nameInput").addEventListener("keydown",e=>{
   if(e.key==="Enter")joinChat()
 });
 
-// Aynı tarayıcıda başka sekmeden değişiklik olursa güncelle.
+// AynÄ± tarayÄ±cÄ±da baÅŸka sekmeden deÄŸiÅŸiklik olursa gÃ¼ncelle.
 window.addEventListener("storage",render);
 </script>
 </body>
