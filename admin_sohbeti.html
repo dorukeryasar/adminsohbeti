@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Sohbeti</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0f1117;color:#fff;height:100vh;overflow:hidden}
+button,input{font:inherit}
+#nameScreen{position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:10}
+.nameBox{width:min(420px,90%);background:#191d27;padding:30px;border-radius:22px;text-align:center;box-shadow:0 20px 60px #0008}
+.logo{font-size:44px;margin-bottom:8px}
+.nameBox h1{margin:0 0 8px;font-size:28px}
+.nameBox p{color:#aeb5c4;margin-bottom:22px}
+.nameBox input{width:100%;padding:14px 16px;border:1px solid #343b4b;background:#10131a;color:#fff;border-radius:12px;outline:none}
+.nameBox button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;background:#5b6cff;color:#fff;font-weight:bold;cursor:pointer}
+#app{height:100vh;display:none;grid-template-rows:64px 1fr 72px}
+header{background:#191d27;border-bottom:1px solid #2a3040;display:flex;align-items:center;padding:0 18px;gap:12px}
+.headerIcon{width:42px;height:42px;border-radius:13px;background:#5b6cff;display:grid;place-items:center;font-size:21px}
+.headerText h2{margin:0;font-size:18px}
+.headerText small{color:#8f98aa}
+.online{margin-left:auto;color:#73e39a;font-size:13px}
+main{display:grid;grid-template-columns:240px 1fr;min-height:0}
+.sidebar{background:#151820;border-right:1px solid #2a3040;padding:18px;overflow:auto}
+.sidebar h3{font-size:13px;color:#8f98aa;text-transform:uppercase;margin:0 0 12px}
+.user{padding:10px;border-radius:10px;background:#1d222d;margin-bottom:7px;display:flex;align-items:center;gap:9px}
+.avatar{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#30384a;font-size:13px}
+.user .admin{font-size:10px;background:#5b6cff;padding:3px 6px;border-radius:5px;margin-left:auto}
+.chat{display:flex;flex-direction:column;min-width:0;min-height:0}
+.messages{flex:1;overflow-y:auto;padding:22px}
+.msg{max-width:75%;margin-bottom:15px}
+.msg.mine{margin-left:auto}
+.meta{font-size:12px;color:#8f98aa;margin:0 0 5px 4px}
+.meta b{color:#fff}
+.bubble{background:#202633;padding:11px 14px;border-radius:14px;border-top-left-radius:5px;word-wrap:break-word;white-space:pre-wrap}
+.mine .bubble{background:#5b6cff;border-top-left-radius:14px;border-top-right-radius:5px}
+.adminMsg .bubble{border:1px solid #6977ff}
+.composer{padding:12px 16px;background:#191d27;border-top:1px solid #2a3040;display:flex;gap:9px}
+.composer input{flex:1;min-width:0;border:1px solid #343b4b;background:#10131a;color:#fff;border-radius:13px;padding:13px 15px;outline:none}
+.composer button{border:0;background:#5b6cff;color:#fff;border-radius:13px;padding:0 20px;font-weight:bold;cursor:pointer}
+.adminPanel{position:fixed;right:15px;top:75px;background:#191d27;border:1px solid #343b4b;border-radius:14px;padding:10px;display:none;z-index:5}
+.adminPanel button{display:block;width:100%;background:#252b38;border:0;color:#fff;padding:9px;margin:3px 0;border-radius:8px;cursor:pointer}
+#adminToggle{margin-left:8px;background:#252b38;border:0;color:#fff;padding:8px 10px;border-radius:9px;cursor:pointer}
+.empty{color:#747d8f;text-align:center;margin-top:40px}
+@media(max-width:650px){
+ main{grid-template-columns:1fr}
+ .sidebar{display:none}
+ .msg{max-width:88%}
+ .online{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="nameScreen">
+  <div class="nameBox">
+    <div class="logo">💬</div>
+    <h1>Admin Sohbeti</h1>
+    <p>Sohbete katılmak için kullanıcı adını yaz.</p>
+    <input id="nameInput" maxlength="24" placeholder="Kullanıcı adın..." autocomplete="off">
+    <button onclick="joinChat()">Sohbete Katıl</button>
+  </div>
+</div>
+
+<div id="app">
+<header>
+  <div class="headerIcon">💬</div>
+  <div class="headerText">
+    <h2>Admin Sohbeti</h2>
+    <small>Genel Grup</small>
+  </div>
+  <div class="online">◄1�7 Çevrimiçi</div>
+  <button id="adminToggle" onclick="toggleAdmin()">⚄1�7</button>
+</header>
+
+<main>
+  <aside class="sidebar">
+    <h3>Gruptakiler</h3>
+    <div id="users"></div>
+  </aside>
+  <section class="chat">
+    <div id="messages" class="messages">
+      <div class="empty" id="empty">Henüz mesaj yok. İlk mesajı sen gönder! 👋</div>
+    </div>
+    <div class="composer">
+      <input id="messageInput" maxlength="500" placeholder="Mesaj yaz..." autocomplete="off">
+      <button onclick="sendMessage()">Gönder</button>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="adminPanel" id="adminPanel">
+  <button onclick="adminMessage()">📢 Admin mesajı gönder</button>
+  <button onclick="clearChat()">🗑︄1�7 Sohbeti temizle</button>
+</div>
+
+<script>
+const STORAGE="admin_sohbeti_messages_v1";
+const USERS="admin_sohbeti_users_v1";
+let username="";
+let isAdmin=false;
+
+function getMessages(){return JSON.parse(localStorage.getItem(STORAGE)||"[]")}
+function saveMessages(x){localStorage.setItem(STORAGE,JSON.stringify(x))}
+function getUsers(){return JSON.parse(localStorage.getItem(USERS)||"[]")}
+function saveUsers(x){localStorage.setItem(USERS,JSON.stringify(x))}
+
+function uniqueName(base){
+  let users=getUsers();
+  if(!users.some(x=>x===base)) return base;
+  let n=1, candidate=base+" ("+n+")";
+  while(users.includes(candidate)){n++;candidate=base+" ("+n+")"}
+  return candidate;
+}
+
+function joinChat(){
+  let base=document.getElementById("nameInput").value.trim();
+  if(!base){alert("Lütfen bir kullanıcı adı yaz.");return}
+  username=uniqueName(base);
+  let users=getUsers();
+  if(!users.includes(username)){users.push(username);saveUsers(users)}
+  // İlk giren kullanıcıya demo olarak admin yetkisi verilir.
+  isAdmin=users[0]===username;
+  document.getElementById("nameScreen").style.display="none";
+  document.getElementById("app").style.display="grid";
+  render();
+  document.getElementById("messageInput").focus();
+}
+
+function sendMessage(){
+  const input=document.getElementById("messageInput");
+  const text=input.value.trim();
+  if(!text)return;
+  let arr=getMessages();
+  arr.push({id:Date.now()+Math.random(),name:username,text,time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}),admin:false});
+  saveMessages(arr);
+  input.value="";
+  render();
+}
+
+function adminMessage(){
+  if(!isAdmin){alert("Bu menü yalnızca admin içindir.");return}
+  const text=prompt("Admin mesajını yaz:");
+  if(!text||!text.trim())return;
+  let arr=getMessages();
+  arr.push({id:Date.now()+Math.random(),name:username,text:text.trim(),time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}),admin:true});
+  saveMessages(arr);
+  render();
+}
+
+function clearChat(){
+  if(!isAdmin){alert("Bu işlem yalnızca admin içindir.");return}
+  if(confirm("Tüm mesajlar silinsin mi?")){saveMessages([]);render()}
+}
+
+function toggleAdmin(){
+  document.getElementById("adminPanel").style.display =
+    document.getElementById("adminPanel").style.display==="block" ? "none":"block";
+}
+
+function render(){
+  const box=document.getElementById("messages");
+  const arr=getMessages();
+  box.innerHTML="";
+  if(!arr.length){
+    box.innerHTML='<div class="empty">Henüz mesaj yok. İlk mesajı sen gönder! 👋</div>';
+  } else {
+    arr.forEach(m=>{
+      const wrap=document.createElement("div");
+      wrap.className="msg "+(m.name===username?"mine ":"")+(m.admin?"adminMsg":"");
+      const meta=document.createElement("div");
+      meta.className="meta";
+      meta.innerHTML="<b>"+escapeHtml(m.name)+"</b> "+(m.admin?"🛡︄1�7 Admin ":"")+" · "+escapeHtml(m.time);
+      const bubble=document.createElement("div");
+      bubble.className="bubble";
+      bubble.textContent=m.text;
+      wrap.appendChild(meta);wrap.appendChild(bubble);box.appendChild(wrap);
+    });
+    box.scrollTop=box.scrollHeight;
+  }
+  renderUsers();
+}
+
+function renderUsers(){
+  const box=document.getElementById("users");
+  box.innerHTML="";
+  getUsers().forEach((u,i)=>{
+    const el=document.createElement("div");
+    el.className="user";
+    el.innerHTML='<div class="avatar">'+escapeHtml(u.charAt(0).toUpperCase())+'</div><span>'+escapeHtml(u)+'</span>'+(i===0?'<span class="admin">ADMIN</span>':'');
+    box.appendChild(el);
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+
+document.getElementById("messageInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}
+});
+document.getElementById("nameInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter")joinChat()
+});
+
+// Aynı tarayıcıda başka sekmeden değişiklik olursa güncelle.
+window.addEventListener("storage",render);
+</script>
+</body>
+</html>
